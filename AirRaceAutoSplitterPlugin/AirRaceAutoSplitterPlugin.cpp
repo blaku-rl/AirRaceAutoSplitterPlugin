@@ -1,9 +1,15 @@
+#include "pch.h"
 #include "AirRaceAutoSplitterPlugin.h"
 
-BAKKESMOD_PLUGIN(AirRaceAutoSplitterPlugin, "Air Race Auto-Splitter Plugin", "1.0", PLUGINTYPE_FREEPLAY)
+
+BAKKESMOD_PLUGIN(AirRaceAutoSplitterPlugin, "Air Race Auto-Splitter Plugin", plugin_version, PLUGINTYPE_FREEPLAY)
+
+std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 
 void AirRaceAutoSplitterPlugin::onLoad()
 {
+	_globalCvarManager = cvarManager;
+
 	cvarManager->registerCvar("airraceautosplit_enabled", "0", "True/False value for if the plugin is enabled", true, true, 0.0f, true, 1.0f, true)
 		.addOnValueChanged(bind(&AirRaceAutoSplitterPlugin::ToggleEnabled, this, std::placeholders::_1, std::placeholders::_2));
 	cvarManager->registerNotifier("airraceautosplit_toggle_enabled", [this](std::vector<std::string> params) {
@@ -31,7 +37,6 @@ void AirRaceAutoSplitterPlugin::onLoad()
 
 void AirRaceAutoSplitterPlugin::onUnload()
 {
-
 }
 
 void AirRaceAutoSplitterPlugin::ToggleEnabled(std::string oldValue, CVarWrapper newValue)
@@ -52,7 +57,9 @@ void AirRaceAutoSplitterPlugin::ToggleEnabledEasy()
 bool AirRaceAutoSplitterPlugin::IsPanicsAirRace()
 {
 	std::string mapName = gameWrapper->GetCurrentMap();
-	std::transform(mapName.begin(), mapName.end(), mapName.begin(), std::tolower);
+	for (int i = 0; i < mapName.length(); i++) {
+		mapName[i] = std::tolower(mapName[i]);
+	}
 	return mapName == "airracetest" || mapName == "panicsairrace";
 }
 
@@ -70,7 +77,7 @@ void AirRaceAutoSplitterPlugin::InitializeSplits()
 		this->SetSpawn();
 		Log("Auto Split Enabled", true);
 	}
-	else 
+	else
 	{
 		Log("Auto Split Disabled", true);
 	}
@@ -134,7 +141,7 @@ void AirRaceAutoSplitterPlugin::CheckFirstSplit(std::string eventName)
 
 	if (car.Z < 1170.0f) { return; }
 
-	Vector centerFirstCheck = {-8993.48, -26986.1, 0};
+	Vector centerFirstCheck = { -8993.48, -26986.1, 0 };
 	Vector repositionedCar = { car.X, car.Y, 0 };
 	auto diff = centerFirstCheck - repositionedCar;
 
